@@ -1,0 +1,254 @@
+:root {
+  --bg: #0d0d0d;
+  --panel-bg: #1a1a1a;
+  --panel-bg-2: #141414;
+  --fg: #eaeaea;
+  --fg-dim: #9a9a9a;
+  --border: #2a2a2a;
+  --accent-blue: #3b82f6;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-yellow: #eab308;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.dark {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Segoe UI", "Hiragino Sans", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+.pane {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px;
+}
+
+.pane h2 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- ダッシュボード --- */
+.top-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pane-wide {
+  margin: 8px;
+}
+
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.accent-blue {
+  border-left: 4px solid var(--accent-blue);
+}
+
+.accent-green {
+  border-left: 4px solid var(--accent-green);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 10px;
+}
+
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.toggle-row:last-child {
+  border-bottom: none;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.lock-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 6px;
+  background: var(--accent-red);
+}
+
+.lock-dot.locked {
+  background: var(--accent-green);
+}
+
+.ptp-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ptp-summary .stat-label {
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+}
+
+.ptp-summary .stat-value {
+  font-size: 1.2rem;
+}
+
+.log-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  background: var(--panel-bg-2);
+}
+
+.log-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-scroll th,
+.log-scroll td {
+  text-align: left;
+  padding: 2px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0 4px 0;
+}
+
+.btn {
+  background: var(--panel-bg-2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent-blue);
+}
+
+.btn-danger:hover {
+  border-color: var(--accent-red);
+}
+
+/* --- 設定画面 --- */
+.settings-layout {
+  display: flex;
+  margin: 8px;
+}
+
+.tab-list {
+  display: flex;
+  flex-direction: column;
+  width: 180px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.tab-btn {
+  background: var(--panel-bg);
+  color: var(--fg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: var(--panel-bg-2);
+  color: var(--accent-blue);
+}
+
+.tab-content {
+  flex: 1;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 480px;
+  margin-bottom: 10px;
+}
+
+.form-row label {
+  color: var(--fg-dim);
+}
+
+.form-row input {
+  background: var(--panel-bg-2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: 200px;
+}
+
+.section-title {
+  margin-top: 24px;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.popup-hint {
+  color: var(--accent-yellow);
+  font-size: 0.85rem;
+  margin-top: 8px;
+}

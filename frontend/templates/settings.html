@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoIP_checker 設定変更</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark">
+  <header class="pane">
+    <a href="/">⚙ ダッシュボードGUIへの遷移</a>
+  </header>
+
+  <div class="settings-layout">
+    <nav class="tab-list">
+      <button class="tab-btn active" data-tab="ptp">PTP設定</button>
+      <button class="tab-btn" data-tab="system">システム設定</button>
+    </nav>
+
+    <div class="tab-content">
+      <!-- PTP設定タブ(要件定義書3.4.4) -->
+      <section id="tab-ptp" class="tab-pane active">
+        <h2>PTP設定</h2>
+        <div class="form-row"><label>ドメイン番号</label><input type="number" id="ptp-domain"></div>
+        <div class="form-row"><label>Priority1</label><input type="number" id="ptp-priority1"></div>
+        <div class="form-row"><label>Priority2</label><input type="number" id="ptp-priority2"></div>
+        <div class="form-row"><label>Sync Interval (log2 sec)</label><input type="number" id="ptp-sync-interval"></div>
+        <div class="form-row"><label>Announce Interval (log2 sec)</label><input type="number" id="ptp-announce-interval"></div>
+        <div class="form-row"><label>Delay Request Interval (log2 sec)</label><input type="number" id="ptp-delay-request-interval"></div>
+
+        <p class="section-title">ロック判定・アラート閾値</p>
+        <div class="form-row"><label>ロック閾値(ns)</label><input type="number" id="ptp-lock-threshold-ns"></div>
+        <div class="form-row"><label>ロック安定時間(秒)</label><input type="number" id="ptp-lock-stable-sec"></div>
+        <div class="form-row"><label>Offsetアラート閾値(ns)</label><input type="number" id="ptp-offset-alert-threshold-ns"></div>
+
+        <button class="btn" id="btn-save-ptp">保存</button>
+        <button class="btn btn-danger" id="btn-clear-ptp-log">ログのクリア</button>
+        <p class="popup-hint">保存するとPTPコンテナ(コンテナ②)を再起動します。</p>
+      </section>
+
+      <!-- システム設定変更タブ(要件定義書3.4.4) -->
+      <section id="tab-system" class="tab-pane">
+        <h2>システム設定</h2>
+
+        <p class="section-title">NIC割り当て</p>
+        <div class="form-row"><label>NIC①(Amber・メディア)</label><input type="text" id="sys-nic-amber"></div>
+        <div class="form-row"><label>NIC②(Blue・メディア・オプション)</label><input type="text" id="sys-nic-blue"></div>
+        <div class="form-row"><label>NIC③(制御)</label><input type="text" id="sys-nic-control"></div>
+        <button class="btn" id="btn-save-nics">保存</button>
+        <p class="popup-hint">保存すると本システムを再起動します。</p>
+
+        <p class="section-title">IPアドレス設定</p>
+        <div class="form-row"><label>インターフェース</label><input type="text" id="sys-ip-interface" placeholder="eth2"></div>
+        <div class="form-row"><label>DHCP</label><input type="checkbox" id="sys-ip-dhcp"></div>
+        <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="sys-ip-address" placeholder="192.168.1.10/24"></div>
+        <div class="form-row"><label>デフォルトゲートウェイ</label><input type="text" id="sys-ip-gateway" placeholder="192.168.1.1"></div>
+        <button class="btn" id="btn-save-ip">保存</button>
+        <p class="popup-hint">保存するとサーバーOSを再起動します。</p>
+
+        <p class="section-title">設定エクスポート・インポート</p>
+        <button class="btn" id="btn-export-config">エクスポート</button>
+        <input type="file" id="import-file" accept="application/json" style="display:none;">
+        <button class="btn" id="btn-import-config">インポート</button>
+        <p class="popup-hint">システム設定(NIC割り当て・IPアドレス)を除く全設定が対象です。</p>
+
+        <p class="section-title">電源操作</p>
+        <button class="btn" id="btn-restart">本システム再起動</button>
+        <button class="btn btn-danger" id="btn-reboot">サーバーOS再起動</button>
+        <button class="btn btn-danger" id="btn-shutdown">サーバーシャットダウン</button>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/settings.js"></script>
+</body>
+</html>

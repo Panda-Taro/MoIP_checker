@@ -1,0 +1,32 @@
+# config/ptp4l.conf.template
+#
+# これは実際のptp4lには読み込ませない「本物のテンプレート」です。
+# frontend(services/config_store.py)が config.json の値で $placeholder を埋め、
+# config/ptp4l.conf (gitignore対象・実行時生成) を生成します。
+#
+# 安全設計(要件定義書 3.2.2): 本装置は物理サーバー1台につき1つのFollowerとしてのみ
+# ふるまい、いかなる場合でもPTPのLeader(Master)にはならない。slaveOnly 1 で保証する。
+#
+# 時刻同期(要件定義書 5.3.1): OSの時刻には一切影響を与えない。clock_servo null を指定する。
+#
+# コミュニケーションモード(3.2.4): マルチキャストのみ。
+# Delay Mechanism(3.2.5): End-to-End(E2E)のみ。
+# 使用NIC(3.2.6): NIC①(Amber)のみ有効。
+
+[global]
+# --- WebGUIから変更可能な項目(要件定義書 3.2.7) ---
+domainNumber            $domain
+priority1               $priority1
+priority2               $priority2
+logSyncInterval         $sync_interval
+logAnnounceInterval     $announce_interval
+logMinDelayReqInterval  $delay_request_interval
+
+# --- 固定項目(安全設計・要件で明示的に指定されている値) ---
+slaveOnly               1
+clock_servo             null
+network_transport       UDPv4
+delay_mechanism         E2E
+time_stamping           software
+
+[$interface]

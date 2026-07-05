@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py -3 -m venv /tmp/moip_test_venv)",
+      "Bash(\"/tmp/moip_test_venv/Scripts/python.exe\" -m pip install --quiet -r frontend/requirements.txt)",
+      "Bash(/tmp/moip_test_venv/Scripts/python.exe -c ' *)",
+      "Bash(mkdir -p /tmp/moip_runtime/app/config /tmp/moip_runtime/app/data /tmp/moip_runtime/app/logs)",
+      "Bash(cp config/config.json /tmp/moip_runtime/app/config/)",
+      "Bash(cp config/ptp4l.conf.template /tmp/moip_runtime/app/config/)",
+      "Bash(touch /tmp/moip_runtime/app/logs/ptp4l.log)",
+      "Read(//tmp/moip_runtime/**)",
+      "Bash(rm -rf /tmp/moip_test_venv /tmp/moip_runtime /tmp/moip_smoke_test.py /tmp/req.txt 2>/dev/null; echo done)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

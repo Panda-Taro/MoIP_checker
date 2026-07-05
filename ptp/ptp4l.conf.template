@@ -1,0 +1,24 @@
+# ptp/ptp4l.conf.template
+#
+# これは config/ptp4l.conf.template とは役割が異なります(実装計画 7.1参照)。
+# こちらはコンテナ②のビルド時に同梱される「即使用可能な完成済みデフォルトconf」で、
+# $placeholder は含みません。config/ptp4l.conf が未生成の初回起動時のみ、
+# entrypoint.sh がこのファイルを /config/ptp4l.conf へコピーします。
+# 通常運用ではfrontendがconfig/ptp4l.conf.templateから生成した実体を使うため、
+# このファイルが実際に使われるのは「初回起動でまだWebGUIから一度も設定保存していない」場合のみです。
+
+[global]
+domainNumber            127
+priority1               128
+priority2               128
+logSyncInterval         -7
+logAnnounceInterval     1
+logMinDelayReqInterval  0
+
+slaveOnly               1
+clock_servo             null
+network_transport       UDPv4
+delay_mechanism         E2E
+time_stamping           software
+
+[eth0]

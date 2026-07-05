@@ -1,0 +1,15 @@
+# Runtime-generated files (not committed)
+config/ptp4l.conf
+data/*.db
+data/*.db-wal
+data/*.db-shm
+logs/*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db

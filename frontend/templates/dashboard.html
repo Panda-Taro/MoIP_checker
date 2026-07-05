@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoIP_checker ダッシュボード</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark">
+  <header class="top-bar">
+    <!-- ①-1 機能領域 -->
+    <div class="pane" id="pane-1-1">
+      <h2>機能設定</h2>
+      <div class="toggle-row"><span>Node機能(NMOS RDS通知)</span><input type="checkbox" disabled></div>
+      <div class="toggle-row"><span>Sender①出力</span><input type="checkbox" disabled></div>
+      <div class="toggle-row"><span>Sender②出力</span><input type="checkbox" disabled></div>
+      <div class="toggle-row"><span>Receiver①動作</span><input type="checkbox" disabled></div>
+      <div class="toggle-row"><span>Receiver②動作</span><input type="checkbox" disabled></div>
+      <p class="popup-hint">※第2期実装予定のため現在は操作できません</p>
+    </div>
+
+    <!-- ①-2 システム領域 -->
+    <div class="pane" id="pane-1-2">
+      <h2>システム <a href="/settings">⚙ 設定変更</a></h2>
+      <div class="stat-row"><span>CPU使用率</span><span id="sys-cpu">--%</span></div>
+      <div class="stat-row"><span>メモリ使用率</span><span id="sys-mem">--%</span></div>
+      <div id="sys-nics"></div>
+      <div class="log-header-row">
+        <span>エラーログ (<span id="sys-log-count">0</span>件)</span>
+        <div>
+          <button class="btn" id="btn-show-syslog">表示</button>
+          <button class="btn" id="btn-export-syslog">CSV</button>
+        </div>
+      </div>
+      <div class="log-scroll" id="sys-log-scroll" style="display:none;"></div>
+    </div>
+  </header>
+
+  <!-- ①-3 PTP領域 -->
+  <section class="pane pane-wide" id="pane-1-3">
+    <h2>🌐 PTP状態表示</h2>
+    <div class="ptp-summary">
+      <div>
+        <div class="stat-label">ロック状態</div>
+        <div class="stat-value"><span class="lock-dot" id="ptp-lock-dot"></span><span id="ptp-lock-text">UNLOCKED</span></div>
+      </div>
+      <div>
+        <div class="stat-label">GM ID</div>
+        <div class="stat-value" id="ptp-gmid">unknown</div>
+      </div>
+      <div>
+        <div class="stat-label">Source ID</div>
+        <div class="stat-value" id="ptp-srcid">unknown</div>
+      </div>
+      <div>
+        <div class="stat-label">Offset 平均/最大/最小 (ns)</div>
+        <div class="stat-value" id="ptp-offset">0 / 0 / 0</div>
+      </div>
+    </div>
+
+    <div class="log-header-row">
+      <span>計測ログ(最新100件)</span>
+      <button class="btn" id="btn-export-measurement">CSVエクスポート</button>
+    </div>
+    <div class="log-scroll" id="measurement-log-scroll"></div>
+
+    <div class="log-header-row">
+      <span>イベントログ(最新100件)</span>
+      <div>
+        <button class="btn" id="btn-export-event">CSVエクスポート</button>
+        <button class="btn btn-danger" id="btn-clear-log">ログクリア</button>
+      </div>
+    </div>
+    <div class="log-scroll" id="event-log-scroll"></div>
+  </section>
+
+  <!-- ①-4/①-5 Sender、①-6/①-7 Receiver (第1期はプレースホルダー) -->
+  <section class="grid-2x2">
+    <div class="pane accent-blue">
+      <h2>Sender①</h2>
+      <span class="badge">Not Implemented (第2期)</span>
+    </div>
+    <div class="pane accent-blue">
+      <h2>Sender②</h2>
+      <span class="badge">Not Implemented (第2期)</span>
+    </div>
+    <div class="pane accent-green">
+      <h2>Receiver①</h2>
+      <span class="badge">Not Implemented (第2期)</span>
+    </div>
+    <div class="pane accent-green">
+      <h2>Receiver②</h2>
+      <span class="badge">Not Implemented (第2期)</span>
+    </div>
+  </section>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

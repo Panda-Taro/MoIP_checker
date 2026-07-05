@@ -1,0 +1,24 @@
+{
+  "ptp": {
+    "domain": 127,
+    "priority1": 128,
+    "priority2": 128,
+    "sync_interval": -7,
+    "announce_interval": 1,
+    "delay_request_interval": 0,
+    "lock_threshold_ns": 500,
+    "lock_stable_sec": 3,
+    "offset_alert_threshold_ns": 500
+  },
+  "system": {
+    "media_nic_amber": "eth0",
+    "media_nic_blue": "eth1",
+    "control_nic": "eth2"
+  },
+  "node": {
+    "node_name": "moip-node-01",
+    "rds_ip": "192.168.1.100",
+    "rds_port": 3211,
+    "registration_api_version": "v1.3"
+  }
+}
