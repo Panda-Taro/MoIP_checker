@@ -11,28 +11,74 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 });
 
 // --- PTP設定タブ ---
+
+// Hz⇔config.json保存形式(log2 interval)の変換(要件定義書ver1.01 3.4.4)
+// interval = log2(1/Hz)、Hz = 2^(-interval)。config.json自体はinterval形式のまま(後方互換)。
+function intervalToHz(interval) {
+  return Math.pow(2, -interval);
+}
+
+function isValidHz(hz) {
+  if (!(hz > 0) || !Number.isFinite(hz)) return false;
+  const log2 = Math.log2(hz);
+  return Math.abs(log2 - Math.round(log2)) < 1e-9;
+}
+
+function hzToInterval(hz) {
+  return -Math.round(Math.log2(hz));
+}
+
+const HZ_FIELDS = ["ptp-sync-hz", "ptp-announce-hz", "ptp-delay-request-hz"];
+
+function clearHzErrors() {
+  for (const id of HZ_FIELDS) {
+    document.getElementById(id).classList.remove("input-error");
+    document.getElementById(`${id}-error`).classList.remove("visible");
+  }
+}
+
+function showHzError(id) {
+  document.getElementById(id).classList.add("input-error");
+  document.getElementById(`${id}-error`).classList.add("visible");
+}
+
 async function loadPtpConfig() {
   const res = await fetch("/api/ptp/config");
   const cfg = await res.json();
   document.getElementById("ptp-domain").value = cfg.domain;
   document.getElementById("ptp-priority1").value = cfg.priority1;
   document.getElementById("ptp-priority2").value = cfg.priority2;
-  document.getElementById("ptp-sync-interval").value = cfg.sync_interval;
-  document.getElementById("ptp-announce-interval").value = cfg.announce_interval;
-  document.getElementById("ptp-delay-request-interval").value = cfg.delay_request_interval;
+  document.getElementById("ptp-sync-hz").value = intervalToHz(cfg.sync_interval);
+  document.getElementById("ptp-announce-hz").value = intervalToHz(cfg.announce_interval);
+  document.getElementById("ptp-delay-request-hz").value = intervalToHz(cfg.delay_request_interval);
   document.getElementById("ptp-lock-threshold-ns").value = cfg.lock_threshold_ns;
   document.getElementById("ptp-lock-stable-sec").value = cfg.lock_stable_sec;
   document.getElementById("ptp-offset-alert-threshold-ns").value = cfg.offset_alert_threshold_ns;
 }
 
 document.getElementById("btn-save-ptp").addEventListener("click", async () => {
+  clearHzErrors();
+
+  const hzValues = {};
+  let hasError = false;
+  for (const id of HZ_FIELDS) {
+    const hz = Number(document.getElementById(id).value);
+    if (!isValidHz(hz)) {
+      showHzError(id);
+      hasError = true;
+    } else {
+      hzValues[id] = hz;
+    }
+  }
+  if (hasError) return; // config.jsonへの書き込みは行わない
+
   const payload = {
     domain: Number(document.getElementById("ptp-domain").value),
     priority1: Number(document.getElementById("ptp-priority1").value),
     priority2: Number(document.getElementById("ptp-priority2").value),
-    sync_interval: Number(document.getElementById("ptp-sync-interval").value),
-    announce_interval: Number(document.getElementById("ptp-announce-interval").value),
-    delay_request_interval: Number(document.getElementById("ptp-delay-request-interval").value),
+    sync_interval: hzToInterval(hzValues["ptp-sync-hz"]),
+    announce_interval: hzToInterval(hzValues["ptp-announce-hz"]),
+    delay_request_interval: hzToInterval(hzValues["ptp-delay-request-hz"]),
     lock_threshold_ns: Number(document.getElementById("ptp-lock-threshold-ns").value),
     lock_stable_sec: Number(document.getElementById("ptp-lock-stable-sec").value),
     offset_alert_threshold_ns: Number(document.getElementById("ptp-offset-alert-threshold-ns").value),

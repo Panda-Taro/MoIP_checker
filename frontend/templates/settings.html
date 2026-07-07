@@ -24,9 +24,12 @@
         <div class="form-row"><label>ドメイン番号</label><input type="number" id="ptp-domain"></div>
         <div class="form-row"><label>Priority1</label><input type="number" id="ptp-priority1"></div>
         <div class="form-row"><label>Priority2</label><input type="number" id="ptp-priority2"></div>
-        <div class="form-row"><label>Sync Interval (log2 sec)</label><input type="number" id="ptp-sync-interval"></div>
-        <div class="form-row"><label>Announce Interval (log2 sec)</label><input type="number" id="ptp-announce-interval"></div>
-        <div class="form-row"><label>Delay Request Interval (log2 sec)</label><input type="number" id="ptp-delay-request-interval"></div>
+        <div class="form-row"><label>Sync Frequency (Hz)</label><input type="number" id="ptp-sync-hz" step="any"></div>
+        <span class="error-text" id="ptp-sync-hz-error">Hzは2のべき乗の値のみ入力可能です</span>
+        <div class="form-row"><label>Announce Frequency (Hz)</label><input type="number" id="ptp-announce-hz" step="any"></div>
+        <span class="error-text" id="ptp-announce-hz-error">Hzは2のべき乗の値のみ入力可能です</span>
+        <div class="form-row"><label>Delay Request Frequency (Hz)</label><input type="number" id="ptp-delay-request-hz" step="any"></div>
+        <span class="error-text" id="ptp-delay-request-hz-error">Hzは2のべき乗の値のみ入力可能です</span>
 
         <p class="section-title">ロック判定・アラート閾値</p>
         <div class="form-row"><label>ロック閾値(ns)</label><input type="number" id="ptp-lock-threshold-ns"></div>

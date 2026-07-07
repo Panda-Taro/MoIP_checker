@@ -9,7 +9,11 @@
       "Bash(cp config/ptp4l.conf.template /tmp/moip_runtime/app/config/)",
       "Bash(touch /tmp/moip_runtime/app/logs/ptp4l.log)",
       "Read(//tmp/moip_runtime/**)",
-      "Bash(rm -rf /tmp/moip_test_venv /tmp/moip_runtime /tmp/moip_smoke_test.py /tmp/req.txt 2>/dev/null; echo done)"
+      "Bash(rm -rf /tmp/moip_test_venv /tmp/moip_runtime /tmp/moip_smoke_test.py /tmp/req.txt 2>/dev/null; echo done)",
+      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" -c static/settings.js)",
+      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" -c static/dashboard.js)",
+      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_hz_check.tmp.js)",
+      "Bash(py -3 -c ' *)"
     ],
     "additionalDirectories": [
       "\\tmp"

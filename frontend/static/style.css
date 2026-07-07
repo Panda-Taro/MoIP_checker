@@ -252,3 +252,19 @@ a {
   font-size: 0.85rem;
   margin-top: 8px;
 }
+
+/* --- PTP設定タブ: Hz入力バリデーション表示 --- */
+.form-row input.input-error {
+  border-color: var(--accent-red) !important;
+}
+
+.error-text {
+  color: var(--accent-red);
+  font-size: 0.8rem;
+  margin: -6px 0 10px 0;
+  display: none;
+}
+
+.error-text.visible {
+  display: block;
+}
