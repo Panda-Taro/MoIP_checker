@@ -230,7 +230,8 @@ a {
   color: var(--fg-dim);
 }
 
-.form-row input {
+.form-row input,
+.form-row select {
   background: var(--panel-bg-2);
   color: var(--fg);
   border: 1px solid var(--border);

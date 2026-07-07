@@ -5,10 +5,14 @@
 """
 
 import collections
+import json
 import logging
+import subprocess
 import time
 
 import psutil
+
+logger = logging.getLogger("moip.system_monitor")
 
 _MAX_LOG_ENTRIES = 500  # WebGUIには最新100件のみ表示するが、内部バッファは少し多めに保持
 _log_buffer: collections.deque = collections.deque(maxlen=_MAX_LOG_ENTRIES)
@@ -74,3 +78,25 @@ def get_nic_status(nic_names: list[str]) -> list[dict]:
         result.append({"name": name, "link_up": link_up, "rate_mbps": round(max(rate_mbps, 0.0), 2)})
 
     return result
+
+
+def list_network_interfaces() -> list[str]:
+    """ip link show を直接実行してホストのNIC一覧を取得する(要件定義書ver1.01 3.4.4)。
+
+    psutilではなくサブプロセスで`ip`コマンドを直接叩くのは、サーバー環境(ライブラリの
+    バージョン差異等)に依存せず常に同じ挙動になることを優先するため。
+    システム設定タブを開くたびに呼び出し、1回だけの取得にしない(要件どおり)。
+    """
+    try:
+        result = subprocess.run(
+            ["ip", "-j", "link", "show"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        links = json.loads(result.stdout)
+        return sorted(link["ifname"] for link in links if link.get("ifname") != "lo")
+    except Exception:
+        logger.exception("failed to list network interfaces via 'ip link show'")
+        return []

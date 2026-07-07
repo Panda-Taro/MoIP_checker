@@ -46,14 +46,14 @@
         <h2>システム設定</h2>
 
         <p class="section-title">NIC割り当て</p>
-        <div class="form-row"><label>NIC①(Amber・メディア)</label><input type="text" id="sys-nic-amber"></div>
-        <div class="form-row"><label>NIC②(Blue・メディア・オプション)</label><input type="text" id="sys-nic-blue"></div>
-        <div class="form-row"><label>NIC③(制御)</label><input type="text" id="sys-nic-control"></div>
+        <div class="form-row"><label>NIC①(Amber・メディア)</label><select id="sys-nic-amber"></select></div>
+        <div class="form-row"><label>NIC②(Blue・メディア・オプション)</label><select id="sys-nic-blue"></select></div>
+        <div class="form-row"><label>NIC③(制御)</label><select id="sys-nic-control"></select></div>
         <button class="btn" id="btn-save-nics">保存</button>
         <p class="popup-hint">保存すると本システムを再起動します。</p>
 
         <p class="section-title">IPアドレス設定</p>
-        <div class="form-row"><label>インターフェース</label><input type="text" id="sys-ip-interface" placeholder="eth2"></div>
+        <div class="form-row"><label>インターフェース</label><select id="sys-ip-interface"></select></div>
         <div class="form-row"><label>DHCP</label><input type="checkbox" id="sys-ip-dhcp"></div>
         <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="sys-ip-address" placeholder="192.168.1.10/24"></div>
         <div class="form-row"><label>デフォルトゲートウェイ</label><input type="text" id="sys-ip-gateway" placeholder="192.168.1.1"></div>

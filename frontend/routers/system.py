@@ -161,3 +161,13 @@ async def get_system_status():
 async def get_system_log(limit: int = 100):
     """システムエラーログ最新N件(要件定義書3.4.3、実装計画5章で追加)"""
     return {"logs": system_monitor.get_recent_logs(limit)}
+
+
+@router.get("/nics")
+async def get_available_nics():
+    """ホストのNIC一覧を毎回取得する(要件定義書ver1.01 3.4.4: ip link show相当)
+
+    システム設定タブのNIC選択プルダウン用。起動時の1回きりの取得ではなく、
+    呼び出しごとに`ip link show`を実行して最新の状態を返す。
+    """
+    return {"nics": system_monitor.list_network_interfaces()}

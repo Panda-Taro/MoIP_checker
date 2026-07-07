@@ -13,7 +13,9 @@
       "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" -c static/settings.js)",
       "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" -c static/dashboard.js)",
       "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_hz_check.tmp.js)",
-      "Bash(py -3 -c ' *)"
+      "Bash(py -3 -c ' *)",
+      "Bash(py -3 -m pip install --quiet psutil)",
+      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_nic_check.tmp.js)"
     ],
     "additionalDirectories": [
       "\\tmp"

@@ -7,6 +7,10 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document.querySelectorAll(".tab-pane").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+    if (btn.dataset.tab === "system") {
+      // システム設定タブを開くたびに最新のNIC一覧を取得する(要件定義書ver1.01 3.4.4)
+      loadAvailableNics();
+    }
   });
 });
 
@@ -98,12 +102,59 @@ document.getElementById("btn-clear-ptp-log").addEventListener("click", async () 
 });
 
 // --- システム設定タブ ---
+
+// NIC選択プルダウン(NIC割り当て3つ + IPアドレス設定の対象インターフェース)
+// 要件定義書ver1.01 3.4.4: ホストのNIC IDを自動取得してプルダウンで選択させる。
+const NIC_SELECT_IDS = ["sys-nic-amber", "sys-nic-blue", "sys-nic-control", "sys-ip-interface"];
+
+function setSelectValueSafe(select, value) {
+  if (!value) return;
+  const exists = Array.from(select.options).some((o) => o.value === value);
+  if (!exists) {
+    // configの値が現在検出されているNIC一覧に無い場合でも選択肢として残す
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = `${value} (未検出)`;
+    select.appendChild(opt);
+  }
+  select.value = value;
+}
+
+async function loadAvailableNics() {
+  const res = await fetch("/api/system/nics");
+  const data = await res.json();
+
+  for (const id of NIC_SELECT_IDS) {
+    const select = document.getElementById(id);
+    const previous = select.value;
+    select.innerHTML = "";
+
+    if (id === "sys-nic-blue") {
+      const emptyOpt = document.createElement("option");
+      emptyOpt.value = "";
+      emptyOpt.textContent = "(未使用)";
+      select.appendChild(emptyOpt);
+    }
+
+    for (const name of data.nics) {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    }
+
+    if (Array.from(select.options).some((o) => o.value === previous)) {
+      select.value = previous;
+    }
+  }
+}
+
 async function loadSystemConfig() {
   const res = await fetch("/api/system/config");
   const cfg = await res.json();
-  document.getElementById("sys-nic-amber").value = cfg.nics.media_nic_amber;
-  document.getElementById("sys-nic-blue").value = cfg.nics.media_nic_blue;
-  document.getElementById("sys-nic-control").value = cfg.nics.control_nic;
+  setSelectValueSafe(document.getElementById("sys-nic-amber"), cfg.nics.media_nic_amber);
+  setSelectValueSafe(document.getElementById("sys-nic-blue"), cfg.nics.media_nic_blue);
+  setSelectValueSafe(document.getElementById("sys-nic-control"), cfg.nics.control_nic);
 }
 
 document.getElementById("btn-save-nics").addEventListener("click", async () => {
@@ -180,4 +231,4 @@ document.getElementById("btn-shutdown").addEventListener("click", async () => {
 });
 
 loadPtpConfig();
-loadSystemConfig();
+loadAvailableNics().then(loadSystemConfig);
