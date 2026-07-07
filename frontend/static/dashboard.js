@@ -141,3 +141,30 @@ fetchPtpLogs();
 fetchSystemStatus();
 setInterval(fetchPtpLogs, 10000);
 setInterval(fetchSystemStatus, 5000);
+
+// ①-3(PTP領域)とSender/Receiver領域の境界をドラッグして表示比率を変更する
+// (要件定義書ver1.01 3.4.3)。15%〜85%の範囲でクランプし、どちらの領域も潰れないようにする。
+(function initResizableSplit() {
+  const handle = document.getElementById("drag-handle");
+  const topPane = document.getElementById("pane-1-3");
+  const container = document.querySelector(".resizable-area");
+  if (!handle || !topPane || !container) return;
+
+  let dragging = false;
+
+  handle.addEventListener("pointerdown", (e) => {
+    dragging = true;
+    handle.setPointerCapture(e.pointerId);
+  });
+
+  handle.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const rect = container.getBoundingClientRect();
+    const ratio = Math.min(Math.max((e.clientY - rect.top) / rect.height, 0.15), 0.85);
+    topPane.style.flexBasis = `${ratio * 100}%`;
+  });
+
+  handle.addEventListener("pointerup", () => {
+    dragging = false;
+  });
+})();

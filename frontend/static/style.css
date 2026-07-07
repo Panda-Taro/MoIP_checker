@@ -45,13 +45,63 @@ a {
 }
 
 /* --- ダッシュボード --- */
+/* 画面全体を100%表示(ブラウザズームに依存せず画面内に収める、要件定義書ver1.01 3.4.3) */
+body.dashboard-body {
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .top-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  flex: 0 0 auto;
+  max-height: 150px; /* ①-1・①-2は常時小さく表示(開閉トグル無し) */
+  overflow: hidden;
+}
+
+.top-bar .pane {
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .pane-wide {
   margin: 8px;
+}
+
+/* ①-3とSender/Receiver領域をドラッグで上下比率変更できるコンテナ */
+.resizable-area {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.resizable-area #pane-1-3 {
+  flex: 0 0 45%;
+  overflow-y: auto;
+  min-height: 100px;
+}
+
+.drag-handle {
+  flex: 0 0 8px;
+  margin: 0 8px;
+  cursor: row-resize;
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.drag-handle:hover {
+  background: var(--accent-blue);
+}
+
+.resizable-area .grid-2x2 {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 100px;
 }
 
 .grid-2x2 {
