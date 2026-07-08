@@ -91,7 +91,7 @@ async function fetchSystemStatus() {
     document.getElementById("sys-log-count").textContent = data.error_log_count;
 
     const nicsHtml = data.nics
-      .map((n) => `<div class="stat-row"><span>${n.name}</span><span>${n.link_up ? "🟢" : "🔴"} ${n.rate_mbps} Mbps</span></div>`)
+      .map((n) => `<span>${n.name} ${n.link_up ? "🟢" : "🔴"} ${n.rate_mbps}Mbps</span>`)
       .join("");
     document.getElementById("sys-nics").innerHTML = nicsHtml;
   } catch (e) {

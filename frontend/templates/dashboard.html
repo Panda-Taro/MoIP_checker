@@ -11,25 +11,29 @@
     <!-- ①-1 機能領域 -->
     <div class="pane" id="pane-1-1">
       <h2>機能設定</h2>
-      <div class="toggle-row"><span>Node機能(NMOS RDS通知)</span><input type="checkbox" disabled></div>
-      <div class="toggle-row"><span>Sender①出力</span><input type="checkbox" disabled></div>
-      <div class="toggle-row"><span>Sender②出力</span><input type="checkbox" disabled></div>
-      <div class="toggle-row"><span>Receiver①動作</span><input type="checkbox" disabled></div>
-      <div class="toggle-row"><span>Receiver②動作</span><input type="checkbox" disabled></div>
+      <div class="toggle-grid">
+        <div class="toggle-row"><span>Node機能(NMOS RDS通知)</span><input type="checkbox" disabled></div>
+        <div class="toggle-row"><span>Sender①出力</span><input type="checkbox" disabled></div>
+        <div class="toggle-row"><span>Sender②出力</span><input type="checkbox" disabled></div>
+        <div class="toggle-row"><span>Receiver①動作</span><input type="checkbox" disabled></div>
+        <div class="toggle-row"><span>Receiver②動作</span><input type="checkbox" disabled></div>
+      </div>
       <p class="popup-hint">※第2期実装予定のため現在は操作できません</p>
     </div>
 
     <!-- ①-2 システム領域 -->
     <div class="pane" id="pane-1-2">
       <h2>システム <a href="/settings">⚙ 設定変更</a></h2>
-      <div class="stat-row"><span>CPU使用率</span><span id="sys-cpu">--%</span></div>
-      <div class="stat-row"><span>メモリ使用率</span><span id="sys-mem">--%</span></div>
-      <div id="sys-nics"></div>
+      <div class="sys-metrics-row">
+        <span>CPU <b id="sys-cpu">--%</b></span>
+        <span>メモリ <b id="sys-mem">--%</b></span>
+      </div>
+      <div id="sys-nics" class="sys-nics-row"></div>
       <div class="log-header-row">
         <span>エラーログ (<span id="sys-log-count">0</span>件)</span>
         <div>
-          <button class="btn" id="btn-show-syslog">表示</button>
-          <button class="btn" id="btn-export-syslog">CSV</button>
+          <button class="btn btn-sm" id="btn-show-syslog">表示</button>
+          <button class="btn btn-sm" id="btn-export-syslog">CSV</button>
         </div>
       </div>
       <div class="log-scroll" id="sys-log-scroll" style="display:none;"></div>
