@@ -80,12 +80,21 @@ def get_nic_status(nic_names: list[str]) -> list[dict]:
     return result
 
 
+# ループバックとDocker自身が生成する仮想インターフェースはプルダウンの選択肢として
+# 意味を持たない(素人ユーザーが物理NICと誤認する恐れがある)ため除外する。
+_EXCLUDED_PREFIXES = ("lo", "docker", "br-", "veth")
+
+
 def list_network_interfaces() -> list[str]:
     """ip link show を直接実行してホストのNIC一覧を取得する(要件定義書ver1.01 3.4.4)。
 
     psutilではなくサブプロセスで`ip`コマンドを直接叩くのは、サーバー環境(ライブラリの
     バージョン差異等)に依存せず常に同じ挙動になることを優先するため。
     システム設定タブを開くたびに呼び出し、1回だけの取得にしない(要件どおり)。
+
+    frontendコンテナは network_mode: host で動作しており、ホストのネットワーク
+    名前空間を共有しているため、ここで取得できるのはホストの実NIC一覧そのもの
+    (ifconfig/ip link showで見えるものと同一)である。
     """
     try:
         result = subprocess.run(
@@ -96,7 +105,11 @@ def list_network_interfaces() -> list[str]:
             timeout=5,
         )
         links = json.loads(result.stdout)
-        return sorted(link["ifname"] for link in links if link.get("ifname") != "lo")
+        return sorted(
+            link["ifname"]
+            for link in links
+            if not link.get("ifname", "").startswith(_EXCLUDED_PREFIXES)
+        )
     except Exception:
         logger.exception("failed to list network interfaces via 'ip link show'")
         return []

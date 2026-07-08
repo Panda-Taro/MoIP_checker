@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# network_mode: host で起動するためEXPOSE/ポートマッピングは使わず、
+# WEBGUI_PORT環境変数(docker-compose.yml)でホスト上に直接listenするポートを指定する。
+# シェル形式+execでPID1をuvicorn自身にし、シグナルハンドリングを正しく機能させる。
+CMD exec uvicorn main:app --host 0.0.0.0 --port ${WEBGUI_PORT:-80} --workers 1
