@@ -4,9 +4,10 @@
   (要件定義書のAPI一覧には無いが、実装計画5章の判断で追加)
 """
 
+import ctypes
+import ctypes.util
 import logging
 import os
-import subprocess
 import time
 
 import docker
@@ -21,6 +22,12 @@ logger = logging.getLogger("moip.routers.system")
 router = APIRouter(prefix="/api/system", tags=["system"])
 
 NETPLAN_PATH = "/etc/netplan/99-moip-checker.yaml"
+
+# reboot(2)システムコールの定数(linux/reboot.h)
+_LINUX_REBOOT_MAGIC1 = 0xFEE1DEAD
+_LINUX_REBOOT_MAGIC2 = 672274793
+_LINUX_REBOOT_CMD_RESTART = 0x01234567
+_LINUX_REBOOT_CMD_POWER_OFF = 0x4321FEDC
 
 
 class NicAssignment(BaseModel):
@@ -92,15 +99,39 @@ def _do_restart_system() -> None:
     os._exit(0)  # restart: unless-stopped によりComposeが自動的にfrontendを再起動する
 
 
+def _reboot_syscall(cmd: int) -> None:
+    """reboot(2)を直接呼び出す(pid:host + privileged:true が前提)。
+
+    `reboot`/`shutdown`コマンドは多くのディストリビューションでsystemctl経由の
+    シンボリックリンクであり、systemdとのD-Bus通信(/run/systemd等)を必要とする。
+    本コンテナはホストの/runを共有していないためコマンド実行では失敗する。
+    pid: host によりPID名前空間がホストと同一になっているため、カーネルの
+    reboot(2)を直接呼べば(CAP_SYS_BOOTはprivileged:trueで付与済み)確実にホスト
+    本体へ効く。
+    """
+    os.sync()
+    libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
+    result = libc.reboot(_LINUX_REBOOT_MAGIC1, _LINUX_REBOOT_MAGIC2, cmd, 0)
+    if result != 0:
+        errno = ctypes.get_errno()
+        raise OSError(errno, os.strerror(errno))
+
+
 def _do_reboot_os() -> None:
     """サーバーOSを再起動する(実装計画2.3: pid:host + privileged前提)"""
     time.sleep(1)
-    subprocess.run(["reboot"], check=False)
+    try:
+        _reboot_syscall(_LINUX_REBOOT_CMD_RESTART)
+    except Exception:
+        logger.exception("failed to reboot host OS")
 
 
 def _do_shutdown_os() -> None:
     time.sleep(1)
-    subprocess.run(["shutdown", "-h", "now"], check=False)
+    try:
+        _reboot_syscall(_LINUX_REBOOT_CMD_POWER_OFF)
+    except Exception:
+        logger.exception("failed to power off host OS")
 
 
 @router.post("/config")
@@ -115,6 +146,11 @@ async def update_system_config(patch: SystemConfigUpdate, background_tasks: Back
         updates = {k: v for k, v in patch.nics.model_dump().items() if v is not None}
         if updates:
             config_store.update_section("system", updates)
+            if "media_nic_amber" in updates:
+                # PTPが使うNIC(要件定義書3.2.6: Amberのみ)が変わった場合は、
+                # ptp4l.confを再生成してから再起動しないと古いインターフェース名の
+                # ままptp4lが起動してしまう。
+                config_store.render_ptp4l_conf()
             background_tasks.add_task(_do_restart_system)
             actions.append("system_restart")
 

@@ -1,6 +1,7 @@
 FROM python:3.12-slim
 
-# reboot/shutdown (util-linux) と ip コマンド(NIC状態取得)が必要
+# ip コマンド(NIC一覧・状態取得)が必要。reboot/shutdownはreboot(2)を直接呼ぶため
+# コマンド不要(routers/system.py参照)。util-linuxは汎用ユーティリティとして念のため維持。
 RUN apt-get update && \
     apt-get install -y --no-install-recommends util-linux iproute2 iputils-ping netplan.io && \
     rm -rf /var/lib/apt/lists/*

@@ -15,7 +15,9 @@
       "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_hz_check.tmp.js)",
       "Bash(py -3 -c ' *)",
       "Bash(py -3 -m pip install --quiet psutil)",
-      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_nic_check.tmp.js)"
+      "Bash(\"/c/Program Files/Adobe/Adobe Photoshop 2026/node.exe\" static/_nic_check.tmp.js)",
+      "Bash(py -3 -m py_compile routers/system.py)",
+      "Bash(py -3 -m pip install --quiet docker fastapi pydantic)"
     ],
     "additionalDirectories": [
       "\\tmp"
