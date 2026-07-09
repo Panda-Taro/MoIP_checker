@@ -22,6 +22,7 @@ logger = logging.getLogger("moip.routers.system")
 router = APIRouter(prefix="/api/system", tags=["system"])
 
 NETPLAN_PATH = "/etc/netplan/99-moip-checker.yaml"
+CLOUD_INIT_DISABLE_PATH = "/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
 
 # glibcのreboot(3)ライブラリ関数(sys/reboot.h)に渡すhowto値。
 # カーネルのreboot(2)システムコール本体は magic1/magic2/cmd/arg の4引数だが、
@@ -67,8 +68,68 @@ async def get_system_config():
     return {"nics": system_cfg, "current_ip_addresses": _current_ip_addresses(nic_names)}
 
 
+def _disable_cloud_init_networking() -> None:
+    """cloud-initによるネットワーク設定の自動生成を無効化する。
+
+    本装置は検証専用サーバーとして複数台に展開される想定であり、cloud-initが
+    起動毎にnetplan設定(50-cloud-init.yaml等)を再生成し続けると、本アプリが書く
+    設定と競合し続ける(下記_neutralize_conflicting_netplan_filesだけでは、再生成
+    される度に競合が復活する)。そのため恒久的にcloud-init側のネットワーク管理を
+    停止する。
+    """
+    os.makedirs(os.path.dirname(CLOUD_INIT_DISABLE_PATH), exist_ok=True)
+    with open(CLOUD_INIT_DISABLE_PATH, "w", encoding="utf-8") as f:
+        f.write("network: {config: disabled}\n")
+    logger.info("disabled cloud-init network config management (%s)", CLOUD_INIT_DISABLE_PATH)
+
+
+def _neutralize_conflicting_netplan_files(interfaces: list[str]) -> None:
+    """他のnetplanファイル(cloud-init生成分等)に同じインターフェースの定義が残っていると、
+    netplanはaddresses等のリスト型プロパティをマージしてしまい、旧IPが残り続けて
+    我々の設定が反映されない。対象インターフェースの定義を他ファイルから削除し、
+    NETPLAN_PATHを唯一の設定源にする。
+    """
+    netplan_dir = os.path.dirname(NETPLAN_PATH)
+    for name in sorted(os.listdir(netplan_dir)):
+        path = os.path.join(netplan_dir, name)
+        if os.path.abspath(path) == os.path.abspath(NETPLAN_PATH) or not name.endswith((".yaml", ".yml")):
+            continue
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+        except Exception:
+            logger.exception("failed to read netplan file %s", path)
+            continue
+
+        ethernets = (data.get("network") or {}).get("ethernets") or {}
+        removed = [iface for iface in interfaces if iface in ethernets]
+        if not removed:
+            continue
+        for iface in removed:
+            del ethernets[iface]
+
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                yaml.safe_dump(data, f, default_flow_style=False)
+            os.chmod(path, 0o600)
+            logger.info("removed conflicting netplan definition for %s from %s", removed, path)
+        except Exception:
+            logger.exception("failed to rewrite netplan file %s", path)
+
+
 def _write_netplan(ip_configs: list[NicIpConfig]) -> None:
-    """netplan設定を書き換える(実装計画5.1: config.jsonにIP欄が無いためnetplanを直接編集)"""
+    """netplan設定を書き換える(実装計画5.1: config.jsonにIP欄が無いためnetplanを直接編集)
+
+    cloud-init等、他のnetplanファイルとの競合(同一インターフェースのaddressesが
+    マージされ旧IPが残り続ける問題)を避けるため、cloud-initのネットワーク管理を
+    無効化し、他ファイルの同インターフェース定義を削除してから自身のファイルを書き込む。
+    """
+    _disable_cloud_init_networking()
+
+    interfaces = [cfg.interface for cfg in ip_configs]
+    _neutralize_conflicting_netplan_files(interfaces)
+
     ethernets = {}
     for cfg in ip_configs:
         entry: dict = {"dhcp4": cfg.dhcp}

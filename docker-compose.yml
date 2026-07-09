@@ -17,6 +17,8 @@ services:
       - ./logs:/app/logs
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/netplan:/etc/netplan
+      # cloud-initのネットワーク管理を無効化するため(netplan設定との競合対策)
+      - /etc/cloud/cloud.cfg.d:/etc/cloud/cloud.cfg.d
     environment:
       - TZ=${TZ:-Asia/Tokyo}
       - LOG_LEVEL=${LOG_LEVEL:-info}
