@@ -6,8 +6,11 @@
 
 import ctypes
 import ctypes.util
+import ipaddress
+import json
 import logging
 import os
+import subprocess
 import time
 
 import docker
@@ -49,14 +52,48 @@ class SystemConfigUpdate(BaseModel):
     ip_addresses: list[NicIpConfig] | None = None
 
 
-def _current_ip_addresses(nic_names: list[str]) -> dict[str, str | None]:
+def _default_gateways() -> dict[str, str]:
+    """`ip -j route show default`でインターフェース毎のデフォルトゲートウェイを取得する"""
+    try:
+        result = subprocess.run(
+            ["ip", "-j", "route", "show", "default"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        routes = json.loads(result.stdout)
+        return {r["dev"]: r["gateway"] for r in routes if r.get("dev") and r.get("gateway")}
+    except Exception:
+        logger.exception("failed to read default gateways via 'ip route show default'")
+        return {}
+
+
+def _current_ip_settings(nic_roles: dict[str, str]) -> dict[str, dict]:
+    """NIC役割(media_nic_amber等)ごとに現在のIPアドレス(CIDR)・デフォルトゲートウェイを取得する。
+
+    要件定義書ver1.01: WebGUIのIPアドレス設定に現在の設定値を表示するために使う。
+    """
     addrs = psutil.net_if_addrs()
-    result: dict[str, str | None] = {}
-    for name in nic_names:
-        if not name:
+    gateways = _default_gateways()
+    result: dict[str, dict] = {}
+
+    for role, iface in nic_roles.items():
+        if not iface:
+            result[role] = {"interface": iface, "address": None, "gateway": None}
             continue
-        ipv4 = next((a.address for a in addrs.get(name, []) if a.family.name == "AF_INET"), None)
-        result[name] = ipv4
+
+        ipv4 = next((a for a in addrs.get(iface, []) if a.family.name == "AF_INET"), None)
+        address = None
+        if ipv4 is not None and ipv4.netmask:
+            try:
+                prefixlen = ipaddress.IPv4Network(f"0.0.0.0/{ipv4.netmask}").prefixlen
+                address = f"{ipv4.address}/{prefixlen}"
+            except ValueError:
+                address = ipv4.address
+
+        result[role] = {"interface": iface, "address": address, "gateway": gateways.get(iface)}
+
     return result
 
 
@@ -64,8 +101,7 @@ def _current_ip_addresses(nic_names: list[str]) -> dict[str, str | None]:
 async def get_system_config():
     """NIC設定①②③・IPアドレスを取得(要件定義書6.2④)"""
     system_cfg = config_store.load_config()["system"]
-    nic_names = list(system_cfg.values())
-    return {"nics": system_cfg, "current_ip_addresses": _current_ip_addresses(nic_names)}
+    return {"nics": system_cfg, "ip_settings": _current_ip_settings(system_cfg)}
 
 
 def _disable_cloud_init_networking() -> None:
@@ -162,8 +198,11 @@ def _restart_ptp_container_sync() -> None:
 
 def _do_restart_system() -> None:
     """本システム(frontend+ptpコンテナ)を再起動する(実装計画2.2)"""
+    logger.info("system restart: scheduled task started, sleeping 1s")
     time.sleep(1)
+    logger.info("system restart: restarting moip-ptp container")
     _restart_ptp_container_sync()
+    logger.info("system restart: exiting frontend process now (restart: unless-stopped が再起動する)")
     os._exit(0)  # restart: unless-stopped によりComposeが自動的にfrontendを再起動する
 
 
@@ -220,8 +259,13 @@ async def update_system_config(patch: SystemConfigUpdate, background_tasks: Back
             if "media_nic_amber" in updates:
                 # PTPが使うNIC(要件定義書3.2.6: Amberのみ)が変わった場合は、
                 # ptp4l.confを再生成してから再起動しないと古いインターフェース名の
-                # ままptp4lが起動してしまう。
-                config_store.render_ptp4l_conf()
+                # ままptp4lが起動してしまう。ここで例外が起きても本システム再起動
+                # 自体は必ず実行する(片方の失敗が他方をブロックしないようにする)。
+                try:
+                    config_store.render_ptp4l_conf()
+                except Exception:
+                    logger.exception("failed to regenerate ptp4l.conf after NIC assignment change")
+            logger.info("scheduling system restart due to NIC assignment change: %s", updates)
             background_tasks.add_task(_do_restart_system)
             actions.append("system_restart")
 

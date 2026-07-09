@@ -53,10 +53,26 @@
         <p class="popup-hint">保存すると本システムを再起動します。</p>
 
         <p class="section-title">IPアドレス設定</p>
-        <div class="form-row"><label>インターフェース</label><select id="sys-ip-interface"></select></div>
-        <div class="form-row"><label>DHCP</label><input type="checkbox" id="sys-ip-dhcp"></div>
-        <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="sys-ip-address" placeholder="192.168.1.10/24"></div>
-        <div class="form-row"><label>デフォルトゲートウェイ</label><input type="text" id="sys-ip-gateway" placeholder="192.168.1.1"></div>
+        <div class="ip-panes">
+          <div class="ip-pane" id="ip-pane-media_nic_amber">
+            <h3>NIC①(Amber・メディア) <span class="fg-dim" id="ip-iface-media_nic_amber"></span></h3>
+            <div class="form-row"><label>DHCP</label><input type="checkbox" id="ip-dhcp-media_nic_amber"></div>
+            <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="ip-address-media_nic_amber" placeholder="192.168.1.10/24"></div>
+            <div class="form-row"><label>ゲートウェイ</label><input type="text" id="ip-gateway-media_nic_amber" placeholder="192.168.1.1"></div>
+          </div>
+          <div class="ip-pane" id="ip-pane-media_nic_blue">
+            <h3>NIC②(Blue・メディア・オプション) <span class="fg-dim" id="ip-iface-media_nic_blue"></span></h3>
+            <div class="form-row"><label>DHCP</label><input type="checkbox" id="ip-dhcp-media_nic_blue"></div>
+            <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="ip-address-media_nic_blue" placeholder="192.168.1.10/24"></div>
+            <div class="form-row"><label>ゲートウェイ</label><input type="text" id="ip-gateway-media_nic_blue" placeholder="192.168.1.1"></div>
+          </div>
+          <div class="ip-pane" id="ip-pane-control_nic">
+            <h3>NIC③(制御) <span class="fg-dim" id="ip-iface-control_nic"></span></h3>
+            <div class="form-row"><label>DHCP</label><input type="checkbox" id="ip-dhcp-control_nic"></div>
+            <div class="form-row"><label>IPアドレス(CIDR)</label><input type="text" id="ip-address-control_nic" placeholder="192.168.1.10/24"></div>
+            <div class="form-row"><label>ゲートウェイ</label><input type="text" id="ip-gateway-control_nic" placeholder="192.168.1.1"></div>
+          </div>
+        </div>
         <button class="btn" id="btn-save-ip">保存</button>
         <p class="popup-hint">保存するとサーバーOSを再起動します。</p>
 

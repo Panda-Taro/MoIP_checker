@@ -352,6 +352,57 @@ body.dashboard-body {
   margin-top: 8px;
 }
 
+.fg-dim {
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+/* --- システム設定タブ: IPアドレス設定(NIC①②③ 3ペイン) --- */
+.ip-panes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ip-pane {
+  background: var(--panel-bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.ip-pane h3 {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  color: var(--fg);
+}
+
+.ip-pane .form-row {
+  max-width: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.ip-pane .form-row label {
+  font-size: 0.78rem;
+}
+
+.ip-pane .form-row input {
+  width: 100%;
+}
+
+.ip-pane .form-row input[type="checkbox"] {
+  width: auto;
+  align-self: flex-start;
+}
+
+.ip-pane.disabled {
+  opacity: 0.5;
+}
+
 /* --- PTP設定タブ: Hz入力バリデーション表示 --- */
 .form-row input.input-error {
   border-color: var(--accent-red) !important;

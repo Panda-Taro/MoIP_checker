@@ -1,7 +1,7 @@
 # config/ptp4l.conf.template
 #
 # これは実際のptp4lには読み込ませない「本物のテンプレート」です。
-# frontend(services/config_store.py)が config.json の値で $placeholder を埋め、
+# frontend(services/config_store.py)が config.json の値で各プレースホルダーを埋め、
 # config/ptp4l.conf (gitignore対象・実行時生成) を生成します。
 #
 # 安全設計(要件定義書 3.2.2): 本装置は物理サーバー1台につき1つのFollowerとしてのみ

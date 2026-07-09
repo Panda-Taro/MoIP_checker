@@ -103,9 +103,12 @@ document.getElementById("btn-clear-ptp-log").addEventListener("click", async () 
 
 // --- システム設定タブ ---
 
-// NIC選択プルダウン(NIC割り当て3つ + IPアドレス設定の対象インターフェース)
-// 要件定義書ver1.01 3.4.4: ホストのNIC IDを自動取得してプルダウンで選択させる。
-const NIC_SELECT_IDS = ["sys-nic-amber", "sys-nic-blue", "sys-nic-control", "sys-ip-interface"];
+// NIC選択プルダウン(NIC割り当て3つ)。要件定義書ver1.01 3.4.4:
+// ホストのNIC IDを自動取得してプルダウンで選択させる。
+const NIC_SELECT_IDS = ["sys-nic-amber", "sys-nic-blue", "sys-nic-control"];
+
+// IPアドレス設定の3ペイン。NIC役割名(config.jsonのキー)と対応させる。
+const IP_ROLES = ["media_nic_amber", "media_nic_blue", "control_nic"];
 
 function setSelectValueSafe(select, value) {
   if (!value) return;
@@ -155,6 +158,41 @@ async function loadSystemConfig() {
   setSelectValueSafe(document.getElementById("sys-nic-amber"), cfg.nics.media_nic_amber);
   setSelectValueSafe(document.getElementById("sys-nic-blue"), cfg.nics.media_nic_blue);
   setSelectValueSafe(document.getElementById("sys-nic-control"), cfg.nics.control_nic);
+
+  // IPアドレス設定の3ペインに、現在割り当てられているNICと現在のIP設定値を反映する
+  // (要件定義書ver1.01: NIC①②③ごとのペインに現在の設定値を表示して編集できるようにする)
+  for (const role of IP_ROLES) {
+    const iface = cfg.nics[role];
+    const current = (cfg.ip_settings && cfg.ip_settings[role]) || {};
+    const pane = document.getElementById(`ip-pane-${role}`);
+    const ifaceLabel = document.getElementById(`ip-iface-${role}`);
+    const dhcpEl = document.getElementById(`ip-dhcp-${role}`);
+    const addressEl = document.getElementById(`ip-address-${role}`);
+    const gatewayEl = document.getElementById(`ip-gateway-${role}`);
+
+    pane.dataset.interface = iface || "";
+
+    if (!iface) {
+      ifaceLabel.textContent = "(未割り当て)";
+      pane.classList.add("disabled");
+      dhcpEl.disabled = true;
+      addressEl.disabled = true;
+      gatewayEl.disabled = true;
+      dhcpEl.checked = false;
+      addressEl.value = "";
+      gatewayEl.value = "";
+      continue;
+    }
+
+    ifaceLabel.textContent = `(${iface})`;
+    pane.classList.remove("disabled");
+    dhcpEl.disabled = false;
+    addressEl.disabled = false;
+    gatewayEl.disabled = false;
+    dhcpEl.checked = false;
+    addressEl.value = current.address || "";
+    gatewayEl.value = current.gateway || "";
+  }
 }
 
 document.getElementById("btn-save-nics").addEventListener("click", async () => {
@@ -176,20 +214,30 @@ document.getElementById("btn-save-nics").addEventListener("click", async () => {
 
 document.getElementById("btn-save-ip").addEventListener("click", async () => {
   if (!confirm("サーバーOSを再起動します。よろしいですか？")) return;
-  const payload = {
-    ip_addresses: [
-      {
-        interface: document.getElementById("sys-ip-interface").value,
-        dhcp: document.getElementById("sys-ip-dhcp").checked,
-        address: document.getElementById("sys-ip-address").value || null,
-        gateway: document.getElementById("sys-ip-gateway").value || null,
-      },
-    ],
-  };
+
+  const ipAddresses = [];
+  for (const role of IP_ROLES) {
+    const pane = document.getElementById(`ip-pane-${role}`);
+    const iface = pane.dataset.interface;
+    if (!iface) continue; // NIC未割り当てのペインはスキップ(要件: NIC②はオプション)
+
+    ipAddresses.push({
+      interface: iface,
+      dhcp: document.getElementById(`ip-dhcp-${role}`).checked,
+      address: document.getElementById(`ip-address-${role}`).value || null,
+      gateway: document.getElementById(`ip-gateway-${role}`).value || null,
+    });
+  }
+
+  if (ipAddresses.length === 0) {
+    alert("設定対象のNICが割り当てられていません。");
+    return;
+  }
+
   await fetch("/api/system/config", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ip_addresses: ipAddresses }),
   });
   alert("サーバーOSを再起動します。");
 });
