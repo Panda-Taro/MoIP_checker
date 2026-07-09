@@ -80,8 +80,15 @@ def _write_netplan(ip_configs: list[NicIpConfig]) -> None:
         ethernets[cfg.interface] = entry
 
     network = {"network": {"version": 2, "ethernets": ethernets}}
+    rendered = yaml.safe_dump(network, default_flow_style=False)
     with open(NETPLAN_PATH, "w", encoding="utf-8") as f:
-        yaml.safe_dump(network, f, default_flow_style=False)
+        f.write(rendered)
+    # netplanは他ユーザーが読み取り可能なパーミッションの設定ファイルを警告・スキップする
+    # ことがある(機密情報漏洩防止のため)。root専用(600)に固定して確実に適用させる。
+    os.chmod(NETPLAN_PATH, 0o600)
+    # netplan自体の適用はホストOS起動時に行われ、コンテナ内からは観測できないため、
+    # 書き込んだ内容だけはここでログに残す(docker logsで確認できるようにする)。
+    logger.info("wrote netplan config to %s (mode 600):\n%s", NETPLAN_PATH, rendered)
 
 
 def _restart_ptp_container_sync() -> None:
