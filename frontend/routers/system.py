@@ -23,9 +23,9 @@ router = APIRouter(prefix="/api/system", tags=["system"])
 
 NETPLAN_PATH = "/etc/netplan/99-moip-checker.yaml"
 
-# reboot(2)システムコールの定数(linux/reboot.h)
-_LINUX_REBOOT_MAGIC1 = 0xFEE1DEAD
-_LINUX_REBOOT_MAGIC2 = 672274793
+# glibcのreboot(3)ライブラリ関数(sys/reboot.h)に渡すhowto値。
+# カーネルのreboot(2)システムコール本体は magic1/magic2/cmd/arg の4引数だが、
+# glibcのreboot()ラッパーは howto の1引数のみを取り、magic番号は内部で自動付加する。
 _LINUX_REBOOT_CMD_RESTART = 0x01234567
 _LINUX_REBOOT_CMD_POWER_OFF = 0x4321FEDC
 
@@ -99,19 +99,22 @@ def _do_restart_system() -> None:
     os._exit(0)  # restart: unless-stopped によりComposeが自動的にfrontendを再起動する
 
 
-def _reboot_syscall(cmd: int) -> None:
-    """reboot(2)を直接呼び出す(pid:host + privileged:true が前提)。
+def _reboot_syscall(howto: int) -> None:
+    """glibcのreboot(3)を呼び出す(pid:host + privileged:true が前提)。
 
     `reboot`/`shutdown`コマンドは多くのディストリビューションでsystemctl経由の
     シンボリックリンクであり、systemdとのD-Bus通信(/run/systemd等)を必要とする。
     本コンテナはホストの/runを共有していないためコマンド実行では失敗する。
     pid: host によりPID名前空間がホストと同一になっているため、カーネルの
     reboot(2)を直接呼べば(CAP_SYS_BOOTはprivileged:trueで付与済み)確実にホスト
-    本体へ効く。
+    本体へ効く。glibcのreboot()ラッパーはhowto1引数のみを取る(magic番号は内部で
+    自動付加されるため渡さない。4引数で呼ぶとEINVALになる)。
     """
     os.sync()
     libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
-    result = libc.reboot(_LINUX_REBOOT_MAGIC1, _LINUX_REBOOT_MAGIC2, cmd, 0)
+    libc.reboot.argtypes = [ctypes.c_int]
+    libc.reboot.restype = ctypes.c_int
+    result = libc.reboot(howto)
     if result != 0:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno))
