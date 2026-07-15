@@ -15,8 +15,8 @@ logSyncInterval         -7
 logAnnounceInterval     1
 logMinDelayReqInterval  0
 
-slaveOnly               1
-clock_servo             null
+clientOnly              1
+clock_servo             pi
 network_transport       UDPv4
 delay_mechanism         E2E
 time_stamping           software

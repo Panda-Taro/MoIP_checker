@@ -32,6 +32,10 @@ services:
     restart: unless-stopped
     # PTPはマルチキャスト・ハードウェアタイムスタンプの制約からhostモード必須(要件定義書5.3.1)
     network_mode: host
+    # CAP_SYS_TIMEは意図的に付与しない。ptp4lのclock_servoには「調整を行わない」値が
+    # 存在しないため(実機でclock_servo null は構文エラーになることを確認済み)、
+    # 通常のpiサーボを使いつつ、OS時刻の変更権限自体をカーネルレベルで禁止することで
+    # 要件定義書5.3.1(OS時刻に影響を与えない)を実現している。CAP_SYS_TIMEを追加しないこと。
     cap_add:
       - NET_ADMIN
     volumes:

@@ -5,9 +5,13 @@
 # config/ptp4l.conf (gitignore対象・実行時生成) を生成します。
 #
 # 安全設計(要件定義書 3.2.2): 本装置は物理サーバー1台につき1つのFollowerとしてのみ
-# ふるまい、いかなる場合でもPTPのLeader(Master)にはならない。slaveOnly 1 で保証する。
+# ふるまい、いかなる場合でもPTPのLeader(Master)にはならない。clientOnly 1 で保証する。
 #
-# 時刻同期(要件定義書 5.3.1): OSの時刻には一切影響を与えない。clock_servo null を指定する。
+# 時刻同期(要件定義書 5.3.1): OSの時刻には一切影響を与えない。
+# clock_servo に「調整を行わない」値は存在しない(clock_servo null は実際のptp4lでは
+# 起動時に構文エラーとなり拒否されることを実機で確認済み)ため、通常のpiサーボを使い、
+# ptpコンテナにCAP_SYS_TIMEを付与しない(docker-compose.yml)ことでOS時刻への書き込み
+# 自体をカーネルレベルで禁止し、目的を達成する。
 #
 # コミュニケーションモード(3.2.4): マルチキャストのみ。
 # Delay Mechanism(3.2.5): End-to-End(E2E)のみ。
@@ -23,8 +27,8 @@ logAnnounceInterval     $announce_interval
 logMinDelayReqInterval  $delay_request_interval
 
 # --- 固定項目(安全設計・要件で明示的に指定されている値) ---
-slaveOnly               1
-clock_servo             null
+clientOnly              1
+clock_servo             pi
 network_transport       UDPv4
 delay_mechanism         E2E
 time_stamping           software
