@@ -26,6 +26,7 @@ _ptp_task: asyncio.Task | None = None
 async def lifespan(app: FastAPI):
     init_db()
     system_monitor.install_log_capture()
+    system_monitor.disable_ntp_client()
 
     global _ptp_task
     _ptp_task = asyncio.create_task(ptp_log_reader.run())

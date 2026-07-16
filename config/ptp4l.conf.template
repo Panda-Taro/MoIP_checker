@@ -7,11 +7,11 @@
 # 安全設計(要件定義書 3.2.2): 本装置は物理サーバー1台につき1つのFollowerとしてのみ
 # ふるまい、いかなる場合でもPTPのLeader(Master)にはならない。clientOnly 1 で保証する。
 #
-# 時刻同期(要件定義書 5.3.1): OSの時刻には一切影響を与えない。
-# clock_servo に「調整を行わない」値は存在しない(clock_servo null は実際のptp4lでは
-# 起動時に構文エラーとなり拒否されることを実機で確認済み)ため、通常のpiサーボを使い、
-# ptpコンテナにCAP_SYS_TIMEを付与しない(docker-compose.yml)ことでOS時刻への書き込み
-# 自体をカーネルレベルで禁止し、目的を達成する。
+# 時刻同期(要件定義書ver1.12 3.2.3・5.3.1): PTPで取得した時計をMasterとして
+# OSの時計をSlaveとする。通常のpiサーボを使い、ptpコンテナにCAP_SYS_TIME
+# (docker-compose.yml)を付与してOS時刻(CLOCK_REALTIME)を実際に補正させる。
+# NTPクライアントはPTPと競合するためホスト側で無効化している
+# (frontend/services/system_monitor.py の disable_ntp_client() 参照)。
 #
 # コミュニケーションモード(3.2.4): マルチキャストのみ。
 # Delay Mechanism(3.2.5): End-to-End(E2E)のみ。

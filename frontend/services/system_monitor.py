@@ -113,3 +113,33 @@ def list_network_interfaces() -> list[str]:
     except Exception:
         logger.exception("failed to list network interfaces via 'ip link show'")
         return []
+
+
+# ホストのNTPクライアントとして代表的なサービス名(存在しないものは無視してよい)
+_NTP_SERVICES = ("systemd-timesyncd.service", "chrony.service", "chronyd.service", "ntp.service")
+
+
+def disable_ntp_client() -> None:
+    """ホストのNTPクライアントを無効化する(要件定義書ver1.12 3.2.3)。
+
+    PTPで取得した時計をMasterとしてOS時計をSlaveにするため、NTPによる別基準の
+    時刻補正が競合しないよう、OS設定レベルでNTP同期を止める。本コンテナは
+    pid: host のため、nsenterでホストのPID1(systemd)の名前空間に入り、
+    ホスト本体のsystemctlを直接操作する(frontend/Dockerfileのutil-linuxで提供)。
+    複数台への展開を前提に、手動セットアップ不要で確実に動作させるため
+    frontend起動時に毎回実行する(既に無効な場合は何もしない、失敗しても致命的では
+    ないためログのみ)。
+    """
+    for service in _NTP_SERVICES:
+        try:
+            result = subprocess.run(
+                ["nsenter", "-t", "1", "-m", "-u", "-i", "-n", "-p", "--",
+                 "systemctl", "disable", "--now", service],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                logger.info("disabled NTP client service: %s", service)
+        except Exception:
+            logger.exception("failed to disable NTP client service: %s", service)
